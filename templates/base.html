@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Weekly Todo App{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Weekly Todo Manager</h1>
+            <p>Organize your week, one task at a time</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                            <span class="close-alert" onclick="this.parentElement.style.display='none'">&times;</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# templates/index.html
+"""
+{% extends "base.html" %}
+
+{% block content %}
+<div class="action-buttons">
+    <button class="btn btn-success" onclick="showAddTaskForm()">➕ Add Task</button>
+    <a href="{{ url_for('initialize') }}" class="btn btn-info">🔄 Initialize Todo</a>
+    <a href="{{ url_for('clear_all') }}" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear all tasks?')">🗑️ Clear All</a>
+</div>
+
+<!-- Add Task Form -->
+<div class="add-task-form" id="addTaskForm">
+    <h3>Add New Task</h3>
+    <form method="POST" action="{{ url_for('add_task') }}">
+        <div class="form-group">
+            <label for="day">Select Day:</label>
+            <select class="form-control" name="day" id="day" required>
+                <option value="">Choose a day...</option>
+                {% for day in week %}
+                    <option value="{{ day }}">{{ day }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="task">Task Description:</label>
+            <input type="text" class="form-control" name="task" id="task" placeholder="Enter your task..." required>
+        </div>
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-success">Add Task</button>
+            <button type="button" class="btn btn-primary" onclick="hideAddTaskForm()">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Week Grid -->
+<div class="week-grid">
+    {% for day in week %}
+        <div class="day-card">
+            <div class="day-header">
+                {{ day }}
+                <span class="task-counter">{{ todo_dict[day]|length }} task{{ 's' if todo_dict[day]|length != 1 else '' }}</span>
+            </div>
+            <div class="day-content">
+                {% if todo_dict[day] %}
+                    <ul class="task-list">
+                        {% for task in todo_dict[day] %}
+                            <li class="task-item">
+                                <span>{{ loop.index }}. {{ task }}</span>
+                                <a href="{{ url_for('delete_task', day=day, task_index=loop.index0) }}" 
+                                   class="delete-btn" 
+                                   onclick="return confirm('Are you sure you want to delete this task?')">
+                                   Delete
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="day-actions">
+                        <a href="{{ url_for('clear_day', day=day) }}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Clear all tasks for {{ day }}?')">
+                           Clear {{ day }}
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="no-tasks">No tasks yet</div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    function showAddTaskForm() {
+        document.getElementById('addTaskForm').style.display = 'block';
+        document.getElementById('task').focus();
+    }
+
+    function hideAddTaskForm() {
+        document.getElementById('addTaskForm').style.display = 'none';
+    }
+</script>
+{% endblock %}

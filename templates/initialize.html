@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Initialize Todo - Weekly Todo App{% endblock %}
+
+{% block content %}
+<div class="initialize-container">
+    <h2>Initialize Your Weekly Todo</h2>
+    <p>Set up tasks for each day of the week. You can add multiple tasks per day.</p>
+    
+    <form method="POST" action="{{ url_for('initialize_tasks') }}">
+        {% for day in week %}
+            <div class="day-section">
+                <h3>{{ day }}</h3>
+                <div class="tasks-input" id="{{ day }}_tasks">
+                    <div class="task-input-group">
+                        <input type="text" name="{{ day }}_tasks" class="form-control" placeholder="Enter task for {{ day }}">
+                        <button type="button" class="btn btn-sm btn-success" onclick="addTaskInput('{{ day }}')">+ Add More</button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-success">Initialize Todo List</button>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function addTaskInput(day) {
+        const container = document.getElementById(day + '_tasks');
+        const newInputGroup = document.createElement('div');
+        newInputGroup.className = 'task-input-group';
+        newInputGroup.innerHTML = `
+            <input type="text" name="${day}_tasks" class="form-control" placeholder="Enter task for ${day}">
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeTaskInput(this)">Remove</button>
+        `;
+        container.appendChild(newInputGroup);
+    }
+    
+    function removeTaskInput(button) {
+        button.parentElement.remove();
+    }
+</script>
+{% endblock %}
